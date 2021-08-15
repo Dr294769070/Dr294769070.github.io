@@ -152,6 +152,99 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-promise" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/08/15/promise/">promise</a>
+    </h1>
+  
+
+        
+        <a href="/2021/08/15/promise/" class="archive-article-date">
+  	<time datetime="2021-08-15T12:53:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-08-15</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>手写promise</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>思考现成的promise用法</p>
+</blockquote>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    resolve()</span><br><span class="line">&#125;)</span><br><span class="line">p.then(<span class="function"><span class="params">res</span> =&gt;</span> &#123;&#125;, <span class="function"><span class="params">rej</span> =&gt;</span> &#123;&#125;)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<blockquote>
+<p>手写代码</p>
+</blockquote>
+</blockquote>
+<ol>
+<li>创建一个promise构造函数，设置默认属性promiseState和promiseResult</li>
+<li>在原型上绑定then方法</li>
+<li>执行函数executor，传入reslove和reject方法，修改promise对象的状态与值</li>
+<li>then方法中，若为同步任务，执行回调；若为异步任务，将其保存在数组callbacks，等待时机执行</li>
+<li>promise支持链式调用，所以说要返回一个promise对象。return一个新的promise，将回调函数的返回值封装，使其能够链式调用<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Promise</span>(<span class="params">executor</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.promiseState = <span class="string">&#x27;pending&#x27;</span></span><br><span class="line">    <span class="built_in">this</span>.promiseResult = <span class="literal">null</span></span><br><span class="line">    <span class="built_in">this</span>.callbacks = []</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">resolve</span>(<span class="params">res</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.promiseState != <span class="string">&#x27;pending&#x27;</span>) <span class="keyword">return</span></span><br><span class="line">        <span class="built_in">this</span>.promiseState = <span class="string">&#x27;fulfilled&#x27;</span></span><br><span class="line">        <span class="built_in">this</span>.promiseResult = res</span><br><span class="line">        <span class="built_in">this</span>.callbacks.forEach(<span class="function"><span class="params">item</span> =&gt;</span> &#123;</span><br><span class="line">            item.onResolved()</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">reject</span>(<span class="params">rej</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.promiseState != <span class="string">&#x27;pending&#x27;</span>) <span class="keyword">return</span></span><br><span class="line">        <span class="built_in">this</span>.promiseState = <span class="string">&#x27;rejected&#x27;</span></span><br><span class="line">        <span class="built_in">this</span>.promiseResult = rej</span><br><span class="line">        <span class="built_in">this</span>.callbacks.forEach(<span class="function"><span class="params">item</span> =&gt;</span> &#123;</span><br><span class="line">            item.onRejected()</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        executor(resolve.bind(<span class="built_in">this</span>), reject.bind(<span class="built_in">this</span>))</span><br><span class="line">    &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">        reject.call(<span class="built_in">this</span>, err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Promise</span>.prototype.then = <span class="function"><span class="keyword">function</span> (<span class="params">onResolved, onRejected</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> cb = <span class="function">(<span class="params">exe</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">const</span> result = exe(<span class="built_in">this</span>.promiseResult)</span><br><span class="line">                <span class="keyword">if</span> (result <span class="keyword">instanceof</span> <span class="built_in">Promise</span>) &#123;</span><br><span class="line">                    result.then(<span class="function"><span class="params">s</span> =&gt;</span> &#123;</span><br><span class="line">                        resolve(s)</span><br><span class="line">                    &#125;, <span class="function"><span class="params">j</span> =&gt;</span> &#123;</span><br><span class="line">                        reject(j)</span><br><span class="line">                    &#125;)</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    resolve(result)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                reject(e)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.promiseState == <span class="string">&#x27;fulfilled&#x27;</span>) &#123;</span><br><span class="line">            cb(onResolved)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.promiseState == <span class="string">&#x27;rejected&#x27;</span>) &#123;</span><br><span class="line">            cb(onRejected)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.promiseState == <span class="string">&#x27;pending&#x27;</span>) &#123;</span><br><span class="line">            <span class="built_in">this</span>.callbacks.push(&#123;</span><br><span class="line">                <span class="attr">onResolved</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">                    cb(onResolved)</span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">onRejected</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">                    cb(onRejected)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">return</span> p</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> flag = <span class="literal">true</span></span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">        flag ? resolve(<span class="string">&#x27;fulfilled&#x27;</span>) : reject(<span class="string">&#x27;rejected&#x27;</span>)</span><br><span class="line">    &#125;, <span class="number">500</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> result = p.then(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve</span>) =&gt;</span> &#123;resolve(<span class="number">2</span>)&#125;)</span><br><span class="line">&#125;, <span class="function"><span class="params">rej</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;rej 1&#x27;</span>, rej)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<blockquote>
+<p>剩余</p>
+</blockquote>
+</blockquote>
+<ol>
+<li>封装catch</li>
+<li>其他优化</li>
+</ol>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/08/15/promise/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-vite" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
